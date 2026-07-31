@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FaceHarmony</title>
+    <style>
+        /* ===== ОБЩИЕ СТИЛИ ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ===== ШАПКА ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 24px 0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+        }
+        .header .logo-icon {
+            font-size: 28px;
+        }
+
+        /* ===== БОЛЬШИЕ КНОПКИ НА ВЕСЬ ЭКРАН ===== */
+        .big-btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .big-btn:active {
+            transform: scale(0.97);
+            background: #333333;
+        }
+        .big-btn.outline {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+        }
+        .big-btn.outline:active {
+            background: #f0f0f0;
+        }
+        .big-btn .icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ===== РАЗДЕЛИТЕЛИ ===== */
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 24px 0 12px 0;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* ===== КАРТОЧКА ПОСЛЕДНЕГО АНАЛИЗА ===== */
+        .last-analysis {
+            background: #f5f5f5;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+        }
+        .last-analysis .date {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .last-analysis .score {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000;
+        }
+        .last-analysis .score span {
+            font-size: 16px;
+            font-weight: 400;
+            color: #888;
+        }
+        .last-analysis .types {
+            font-size: 14px;
+            color: #555;
+            margin-top: 4px;
+        }
+        .last-analysis .types .ok {
+            color: #22c55e;
+        }
+
+        /* ===== ИСТОРИЯ (СПИСОК) ===== */
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .history-item .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .history-item .left .emoji {
+            font-size: 20px;
+        }
+        .history-item .left .info .name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #000;
+        }
+        .history-item .left .info .date {
+            font-size: 12px;
+            color: #999;
+        }
+        .history-item .right .score {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000;
+        }
+        .history-item .right .score span {
+            font-size: 13px;
+            font-weight: 400;
+            color: #999;
+        }
+
+        /* ===== НИЖНЕЕ МЕНЮ ===== */
+        .bottom-menu {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .bottom-menu button {
+            background: none;
+            border: none;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            padding: 8px 12px;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 60px;
+            text-align: center;
+        }
+        .bottom-menu button:active {
+            color: #000;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        /* ===== СКРЫТЫЕ ЭЛЕМЕНТЫ (для режима разметки) ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== РЕЖИМ РАЗМЕТКИ ===== */
+        .step-info {
+            background: #f5f5f5;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+        }
+        .step-info .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+        }
+        .step-info .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .photo-container {
+            position: relative;
+            background: #f5f5f5;
+            border-radius: 16px;
+            overflow: hidden;
+            touch-action: none;
+            margin-bottom: 16px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        }
+        .photo-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        .upload-area {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            cursor: pointer;
+            width: 100%;
+        }
+        .upload-area .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .upload-area p {
+            font-size: 16px;
+            color: #555;
+        }
+        .upload-area .sub {
+            font-size: 13px;
+            color: #bbb;
+            margin-top: 4px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .controls button {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s;
+        }
+        .controls .btn-tip {
+            background: #f0f0f0;
+            color: #000;
+        }
+        .controls .btn-tip:active {
+            background: #e0e0e0;
+        }
+        .controls .btn-confirm {
+            background: #000;
+            color: #fff;
+        }
+        .controls .btn-confirm:active {
+            background: #333;
+        }
+        .nav {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .nav button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f0f0f0;
+            color: #000;
+            flex: 1;
+        }
+        .nav button:active {
+            background: #e0e0e0;
+        }
+        .nav button:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .nav .btn-next {
+            background: #000;
+            color: #fff;
+        }
+        .nav .btn-next:active {
+            background: #333;
+        }
+        .send-btn {
+            padding: 16px;
+            background: #000;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+        .send-btn:active {
+            background: #333;
+        }
+        .send-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* ===== МОДАЛЬНОЕ ОКНО ===== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #fff;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 100%;
+            padding: 24px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #000;
+        }
+        .modal-content p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .modal-content .tip-photo {
+            width: 100%;
+            border-radius: 12px;
+            margin: 12px 0;
+        }
+        .modal-content .close-btn {
+            padding: 14px;
+            background: #000;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+        }
+        .modal-content .close-btn:active {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- ===== ШАПКА ===== -->
+        <div class="header">
+            <h1>📸 FaceHarmony</h1>
+            <span class="logo-icon">⚡</span>
+        </div>
+
+        <!-- ===== ГЛАВНОЕ МЕНЮ (ПО УМОЛЧАНИЮ) ===== -->
+        <div id="mainMenu">
+            <button class="big-btn" id="newAnalysisBtn">
+                <span class="icon">📸</span>
+                НОВЫЙ АНАЛИЗ
+            </button>
+            <button class="big-btn outline" id="historyBtn">
+                <span class="icon">📊</span>
+                ИСТОРИЯ
+            </button>
+
+            <div class="section-title">📌 ПОСЛЕДНИЙ АНАЛИЗ</div>
+            <div class="last-analysis" id="lastAnalysis">
+                <div class="date" id="lastDate">Нет данных</div>
+                <div class="score" id="lastScore">— <span>/ 10</span></div>
+                <div class="types" id="lastTypes">Анфас <span class="ok">⬜</span> Профиль <span class="ok">⬜</span></div>
+            </div>
+
+            <div class="section-title">📜 ИСТОРИЯ</div>
+            <div id="historyList">
+                <div class="history-item">
+                    <div class="left">
+                        <span class="emoji">📊</span>
+                        <div class="info">
+                            <div class="name">Нет сохранённых анализов</div>
+                            <div class="date">Пройди анализ, чтобы увидеть историю</div>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="score">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-menu">
+                <button id="supportBtn">🆘 Поддержка</button>
+                <button id="termsBtn">📋 Условия</button>
+                <button id="privacyBtn">🔒 Конфиденциальность</button>
+                <button id="discordBtn">💬 Discord</button>
+            </div>
+        </div>
+
+        <!-- ===== РЕЖИМ РАЗМЕТКИ (СКРЫТ) ===== -->
+        <div id="analysisMode" class="hidden">
+            <div class="step-info">
+                <div class="title" id="pointName">Линия роста волос</div>
+                <div class="subtitle" id="stepDesc">Шаг 1 из 50</div>
+            </div>
+
+            <div class="photo-container" id="photoContainer">
+                <div class="upload-area" id="uploadArea">
+                    <div class="icon">📸</div>
+                    <p>Нажми, чтобы загрузить фото</p>
+                    <div class="sub">Отправь фото лица анфас</div>
+                </div>
+                <img id="mainImage" src="" alt="Загрузите фото" style="display:none;">
+                <canvas id="canvas" style="display:none;"></canvas>
+            </div>
+
+            <div class="controls" id="controls" style="display:none;">
+                <button class="btn-tip" id="tipBtn">📖 Как найти</button>
+                <button class="btn-confirm" id="confirmBtn">✅ Точка верна</button>
+            </div>
+
+            <div class="nav" id="nav" style="display:none;">
+                <button id="backBtn">◀️ Назад</button>
+                <button class="btn-next" id="nextBtn">Далее ▶️</button>
+            </div>
+
+            <button class="send-btn" id="sendBtn" disabled style="display:none;">📊 Получить результат</button>
+
+            <button class="big-btn outline" id="backToMenuBtn" style="margin-top:16px;">
+                ⬅️ Назад в меню
+            </button>
+        </div>
+
+        <!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
+        <div class="modal" id="tipModal">
+            <div class="modal-content">
+                <h2 id="tipTitle">📖 Как найти</h2>
+                <p id="tipText">Текст подсказки</p>
+                <img class="tip-photo" id="tipPhoto" src="" alt="Подсказка">
+                <button class="close-btn" id="closeTip">Понял ✅</button>
+            </div>
+        </div>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
