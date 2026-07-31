@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FaceHarmony — Анализ лица</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 480px;
+            width: 100%;
+            background: #14141e;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+        .header .progress { font-size: 14px; color: #888; }
+        .step-info {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+        .step-info .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .step-info .subtitle {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .photo-container {
+            position: relative;
+            background: #1a1a2e;
+            border-radius: 16px;
+            overflow: hidden;
+            touch-action: none;
+            margin-bottom: 16px;
+        }
+        .photo-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        }
+        .photo-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .controls button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 80px;
+        }
+        .controls .btn-tip {
+            background: #2a2a4a;
+            color: #8a8aff;
+        }
+        .controls .btn-confirm {
+            background: #4a6aff;
+            color: #fff;
+        }
+        .controls .btn-confirm:active { transform: scale(0.95); }
+        .nav {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .nav button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #2a2a4a;
+            color: #fff;
+        }
+        .nav button:active { transform: scale(0.95); }
+        .nav button:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .nav .btn-next {
+            background: #4a6aff;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 100%;
+            padding: 24px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .modal-content p {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+        .modal-content .tip-photo {
+            width: 100%;
+            border-radius: 12px;
+            margin: 12px 0;
+        }
+        .modal-content .close-btn {
+            padding: 12px 24px;
+            background: #4a6aff;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+        }
+        .placeholder-text {
+            color: #666;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .placeholder-text .icon { font-size: 48px; margin-bottom: 12px; }
+        .send-btn {
+            padding: 16px;
+            background: #4a6aff;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+        .send-btn:active { transform: scale(0.95); }
+        .send-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 FaceHarmony</h1>
+            <span class="progress" id="progress">1 / 50</span>
+        </div>
+
+        <div class="step-info" id="stepInfo">
+            <div class="title" id="pointName">Линия роста волос</div>
+            <div class="subtitle" id="stepDesc">Найди точку и отметь её на фото</div>
+        </div>
+
+        <div class="photo-container" id="photoContainer">
+            <img id="mainImage" src="" alt="Загрузите фото">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <button class="btn-tip" id="tipBtn">📖 Как найти</button>
+            <button class="btn-confirm" id="confirmBtn">✅ Точка верна</button>
+        </div>
+
+        <div class="nav">
+            <button id="backBtn">◀️ Назад</button>
+            <button class="btn-next" id="nextBtn">Далее ▶️</button>
+        </div>
+
+        <button class="send-btn" id="sendBtn" disabled>📊 Получить результат</button>
+    </div>
+
+    <!-- Модальное окно с подсказкой -->
+    <div class="modal" id="tipModal">
+        <div class="modal-content">
+            <h2 id="tipTitle">📖 Как найти</h2>
+            <p id="tipText">Текст подсказки</p>
+            <img class="tip-photo" id="tipPhoto" src="" alt="Подсказка">
+            <button class="close-btn" id="closeTip">Понял ✅</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
